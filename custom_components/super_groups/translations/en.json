@@ -1,0 +1,29 @@
+{
+  "title": "Super Groups",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Dialog title",
+        "data": {
+          "name": "Name"
+        }
+      }
+    },
+    "error": {
+      "error": "Unknown error"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Dialog title",
+        "data": {
+          "name": "Name"
+        }
+      }
+    },
+    "error": {
+      "error": "Unknown error"
+    }
+  }
+}
