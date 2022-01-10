@@ -1,0 +1,5 @@
+{
+    "name": "Super Groups",
+    "domains": ["switch", "light", "binary_sensor"],
+    "render_readme": true
+}
