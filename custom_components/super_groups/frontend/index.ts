@@ -124,7 +124,6 @@ export class SuperGroupsPanel extends LitElement {
     }
 
     async _save(event: any) {
-        // console.log("On save:", event);
         const entry = event.detail;
         const data = entry.id? {
             type: "super_groups/update_entry",
@@ -138,6 +137,7 @@ export class SuperGroupsPanel extends LitElement {
             all_on: entry.allOn,
             items: entry.entry
         };
+        // console.log("On save:", event, data, entry);
         const resp = await this.hass.connection.sendMessagePromise(data);
         // console.log("_save result:", resp);
         this._load();

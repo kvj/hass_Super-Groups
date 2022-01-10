@@ -5,11 +5,12 @@ from homeassistant.components.light import (
 
 import logging
 
-from . import entries_by_domain, set_coordinator
-from .groups import Coordinator, BaseEntity
+from .integration import entries_by_domain, set_coordinator
+from .groups import BaseEntity
 from .constants import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
+
 
 async def async_setup_entry(hass, entry, add_entities):
     entities = []
@@ -21,7 +22,9 @@ async def async_setup_entry(hass, entry, add_entities):
     add_entities(entities)
     return True
 
-_ALL_SUPPORTED = {SUPPORT_BRIGHTNESS, SUPPORT_COLOR_TEMP, SUPPORT_EFFECT, SUPPORT_FLASH, SUPPORT_COLOR, SUPPORT_TRANSITION, SUPPORT_WHITE_VALUE}
+_ALL_SUPPORTED = {SUPPORT_BRIGHTNESS, SUPPORT_COLOR_TEMP, SUPPORT_EFFECT,
+                  SUPPORT_FLASH, SUPPORT_COLOR, SUPPORT_TRANSITION, SUPPORT_WHITE_VALUE}
+
 
 class Entity(BaseEntity, LightEntity):
 
@@ -66,7 +69,6 @@ class Entity(BaseEntity, LightEntity):
     def brightness(self):
         return self._avg(self._all_values("brightness"))
 
-
     @property
     def min_mireds(self):
         return min(self._all_values("min_mireds"))
@@ -78,6 +80,3 @@ class Entity(BaseEntity, LightEntity):
     @property
     def color_temp(self):
         return self._avg(self._all_values("color_temp"))
-
-
-

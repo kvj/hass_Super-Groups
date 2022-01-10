@@ -95,11 +95,21 @@ export class SuperGroupsEditor extends LitElement {
         }
     };
 
+    _asArray(value: string | string[] | undefined) {
+        const res = value || [];
+        return Array.isArray(res)? res: [res];
+    }
+
     _onEntryChanged(event: any) {
         const value = event.detail.value as EntryRecord;
+        // console.log("_entryChanged:", this._data.entry, value);
         this._data = {
             ...this._data,
-            entry: value,
+            entry: {
+                area_id: this._asArray(value.area_id),
+                device_id: this._asArray(value.device_id),
+                entity_id: this._asArray(value.entity_id),
+            },
         };
     };
 
