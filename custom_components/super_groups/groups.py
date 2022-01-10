@@ -66,6 +66,10 @@ class Coordinator(DataUpdateCoordinator):
     def domain(self):
         return self._data["domain"]
 
+    @property
+    def unique_id(self):
+        return "%s-%s" % (self.config_id, self.entity_id)
+
     async def async_update(self):
         entries = await self.all_entries()
         return list(filter(lambda x: x != None, map(lambda x: self._with_valid_state(x), entries)))
@@ -129,7 +133,7 @@ class BaseEntity(CoordinatorEntity):
 
     @property
     def unique_id(self) -> str:
-        return "%s-%s" % (self._coordinator.config_id, self._coordinator.entity_id)
+        return self._coordinator.unique_id
 
     @property
     def device_info(self):

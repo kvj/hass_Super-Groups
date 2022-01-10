@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from .integration import (get_config_entry, get_config_entries,
-                          entries_by_domain, add_new_entry, update_entry, remove_entry)
+                          add_new_entry, update_entry, remove_entry, async_all_entries)
 
 from .constants import DOMAIN, PLATFORMS
 from homeassistant.components.panel_custom import async_register_panel
@@ -59,12 +59,6 @@ async def async_setup(hass, config) -> bool:
     hass.components.websocket_api.async_register_command(ws_remove_entry)
     return True
 
-_ICON_MAP = {
-    "light": "mdi:lightbulb",
-    "binary_sensor": "mdi:checkbox-marked-circle",
-    "switch": "mdi:flash"
-}
-
 
 @websocket_api.websocket_command({
     vol.Required("type"): "super_groups/get_entries",
@@ -75,16 +69,9 @@ async def ws_get_entries(hass, connection, msg: dict):
     _LOGGER.debug("ws_get_entries: %s", msg)
     entry = get_config_entry(hass, msg.get("config_id"))
     all_entries = get_config_entries(hass)
-    groups = entries_by_domain(hass, entry, None)
+    groups = await async_all_entries(hass, entry)
     connection.send_result(msg["id"], {
-        "items": [{
-            "id": x[0],
-            "title": x[1].get("title", x[0]),
-            "icon": _ICON_MAP.get(x[1]["domain"]),
-            "domain": x[1]["domain"],
-            "all_on": x[1]["all_on"],
-            "entry": x[1]["items"],
-        } for x in groups],
+        "items": groups,
         "configs": [{
             "id": x.entry_id,
             "title": x.title,
