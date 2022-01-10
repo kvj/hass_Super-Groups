@@ -1,6 +1,5 @@
 import { html, css, LitElement } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { type } from 'os';
 
 const tabs = [
     {
@@ -90,7 +89,7 @@ export class SuperGroupsPanel extends LitElement {
         const resp = await this.hass.connection.sendMessagePromise({
             type: "super_groups/get_entries"
         });
-        console.log("All items:", resp);
+        // console.log("All items:", resp);
         this._items = resp.items;
     }
 
@@ -103,7 +102,7 @@ export class SuperGroupsPanel extends LitElement {
     }
 
     _edit(item: any) {
-        console.log("_edit:", item.detail.id);
+        // console.log("_edit:", item.detail.id);
         const _item: any = this._items.find((_item: any) => _item.id == item.detail.id);
         this._editorParams = {
             id: _item.id,
@@ -129,7 +128,7 @@ export class SuperGroupsPanel extends LitElement {
     }
 
     async _save(event: any) {
-        console.log("On save:", event);
+        // console.log("On save:", event);
         const entry = event.detail;
         const data = entry.id? {
             type: "super_groups/update_entry",
@@ -144,12 +143,12 @@ export class SuperGroupsPanel extends LitElement {
             items: entry.entry
         };
         const resp = await this.hass.connection.sendMessagePromise(data);
-        console.log("_save result:", resp);
+        // console.log("_save result:", resp);
         this._load();
     }
 
     render() {
-        console.log("Panel: ", this.hass, this._editorParams);
+        // console.log("Panel: ", this.hass, this._editorParams);
         return html`
         <hass-tabs-subpage-data-table
             .hass=${this.hass}
@@ -230,7 +229,6 @@ export class SuperGroupsEditor extends LitElement {
     }
 
     _allOnChanged(event: any) {
-        console.log("allON:", event);
         this._data = {
             ...this._data,
             allOn: event.detail.value,
