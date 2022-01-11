@@ -1,12 +1,12 @@
 {
   "domain": "super_groups",
-  "name": "Entity Group",
+  "name": "Super Groups",
   "documentation": "https://github.com/kvj/hass_Super-Groups",
   "issue_tracker": "https://github.com/kvj/hass_Super-Groups/issues",
   "dependencies": [],
   "codeowners": ["@kvj"],
   "requirements": [],
-  "iot_class": "cloud_push",
+  "iot_class": "calculated",
   "config_flow": true,
   "version": "0.1.0"
 }
