@@ -37,26 +37,6 @@ class ConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             options={},
             data={},
         )
-        errors = None
-
-        _LOGGER.debug(f"Input: {user_input}")
-        if user_input:
-            errors = _validate(user_input)
-            if len(errors) == 0:
-                return self.async_create_entry(
-                    title=user_input.get("name"),
-                    options=user_input,
-                    data=dict(
-                        name=user_input.get("name"), 
-                    ),
-                )
-
-        if not user_input:
-            user_input = dict(name="My Car")
-
-        return self.async_show_form(
-            step_id="user", data_schema=_gen_init_schema(user_input), errors=errors
-        )
 
 class OptionsFlowHandler(config_entries.OptionsFlow):
 
@@ -66,14 +46,3 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
     async def async_step_init(self, user_input=None):
         _LOGGER.debug(f"OptionsFlowHandler: {user_input} {self.config_entry}")
         return self.async_create_entry(title="", data=self.config_entry.as_dict()["options"])
-        errors = None
-        if user_input:
-            errors = _validate(user_input)
-            if len(errors) == 0:
-                return self.async_create_entry(title="", data=user_input)
-        else:
-            user_input = self.config_entry.as_dict()["options"]
-
-        return self.async_show_form(
-            step_id="init", data_schema=_gen_options_schema(user_input), errors=errors
-        )

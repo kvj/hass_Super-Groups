@@ -33,7 +33,7 @@ export class SuperGroupsPanel extends LitElement {
     _editorParams: EditorParams | undefined = undefined;
 
     _columns(narrow: boolean) {
-        return {
+        const columns: any = {
             id: {
                 hidden: true,
             },
@@ -50,27 +50,42 @@ export class SuperGroupsPanel extends LitElement {
                 sortable: true,
                 filterable: true,
                 direction: "asc",
-                grows: true,
+                width: "300px",
+                grows: narrow? true: false,
                 template: (value: string) => html`${value}`,
             },
-            remove: {
-                title: "Remove",
+        };
+        if (!narrow) {
+            columns["members"] = {
+                title: "Group Members",
+                sortable: false,
                 filterable: false,
-                grows: false,
-                template: (value: string, row?: any) => {
-                    const _action = () => {
-                        this._remove(row.id);
-                    };
-                    return html`
-                        <mwc-button
-                            @click=${_action}
-                        >
-                            Remove
-                        </mwc-button>
-                    `;
-                }
+                direction: "asc",
+                grows: true,
+                template: (value: any[]) => {
+                    const list = value.map((e) => e.title);
+                    return html`${list.join(", ")}`
+                },
+            };
+        }
+        columns["remove"] = {
+            title: "Remove",
+            filterable: false,
+            grows: false,
+            template: (value: string, row?: any) => {
+                const _action = () => {
+                    this._remove(row.id);
+                };
+                return html`
+                    <mwc-button
+                        @click=${_action}
+                    >
+                        Remove
+                    </mwc-button>
+                `;
             }
         };
+        return columns;
     }
 
     async _remove(id: string) {

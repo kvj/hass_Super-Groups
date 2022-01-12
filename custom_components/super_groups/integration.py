@@ -29,6 +29,24 @@ def entries_from_registry(hass, entity_reg, device_reg, entry, id):
     device = device_reg.async_get(entity.device_id) if entity and entity.device_id else None
     return entity, device
 
+def make_items_list(entity_reg, device_reg, items):
+    result = []
+    for item in items.get("entity_id", []):
+        if entity := entity_reg.async_get(item):
+            result.append({
+                "id": item, 
+                "title": entity.name or entity.original_name, 
+                "type": "entity"
+            })
+    for item in items.get("device_id", []):
+        if entity := device_reg.async_get(item):
+            result.append({
+                "id": item, 
+                "title": entity.name_by_user or entity.name, 
+                "type": "device"
+            })
+    return result
+
 async def async_all_entries(hass, entry):
     result = []
     entity_reg = await entity_registry.async_get_registry(hass)
@@ -37,13 +55,15 @@ async def async_all_entries(hass, entry):
     for (key, value) in data.items():
         entity, device = entries_from_registry(hass, entity_reg, device_reg, entry, key)
         title = (device.name_by_user if device.name_by_user else device.name) if device else value.get("title", key)
+        items = value.get("items", {})
         result.append({
             "id": key,
             "title": title,
             "domain": value.get("domain"),
             "all_on": value.get("all_on", False),
             "icon": entity.icon if entity and entity.icon else _ICON_MAP.get(value.get("domain")),
-            "entry": value.get("items")
+            "entry": items,
+            "members": make_items_list(entity_reg, device_reg, items)
         })
     return result
 
