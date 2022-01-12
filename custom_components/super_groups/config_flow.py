@@ -1,6 +1,8 @@
+from .integration import get_config_entry
 from homeassistant import config_entries
 import homeassistant.helpers.config_validation as cv
 from .constants import DOMAIN
+
 
 import logging
 import voluptuous as vol
@@ -32,6 +34,8 @@ class ConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     #     return OptionsFlowHandler(config_entry)
 
     async def async_step_user(self, user_input):
+        if get_config_entry(self.hass, None):
+            return self.async_abort(reason="already_registered")
         return self.async_create_entry(
             title="Super Groups",
             options={},

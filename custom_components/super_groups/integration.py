@@ -122,5 +122,7 @@ def get_config_entries(hass):
 
 def get_config_entry(hass, entry_id):
     entries = get_config_entries(hass)
+    if len(entries) == 0:
+        return None
     return next((x for x in get_config_entries(hass) if x.entry_id == entry_id), entries[0])
 
