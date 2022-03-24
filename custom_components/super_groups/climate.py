@@ -65,11 +65,13 @@ class Entity(BaseEntity, climate.ClimateEntity):
 
     @property
     def hvac_action(self):
-        return self._all(self._all_values("hvac_action"))
+        return self._all(self._all_values("hvac_action"), "off")
 
     @property
     def hvac_mode(self):
-        return self._all(self._all_values(None, domains=["climate"]), "idle")
+        if not self.available:
+            return None
+        return self._all(self._all_values(None, domains=["climate"]), "off")
 
     @property
     def hvac_modes(self):

@@ -95,11 +95,17 @@ class Coordinator(DataUpdateCoordinator):
         )
 
     def is_on(self):
-        states = self.states(domains=["light", "switch", "binary_sensor"])
+        def _is_on(domain, state):
+            if domain in _ON_STATES:
+                return state in _ON_STATES[domain]
+            if domain in _OFF_STATES:
+                return state not in _OFF_STATES[domain]
+            return False
+        states = [_is_on(x.domain, x.state) for x in self.states()]
         _LOGGER.debug("is_on: %s = %s", self.entity_id, states)
         if self._data.get("all_on") == True:
-            return not _any([x.state == "on" for x in states], False)
-        return _any([x.state == "on" for x in states], True)
+            return not _any(states, False)
+        return _any(states, True)
 
     async def async_call_service(self, name, args):
         ids = {}
@@ -118,12 +124,21 @@ class Coordinator(DataUpdateCoordinator):
                     "data": args
                 })
 
+_ON_STATES = {
+    "light": ["on"],
+    "switch": ["on"],
+    "binary_switch": ["on"],
+}
+
+_OFF_STATES = {
+    "climate": ["off"],
+}
 
 _SERVICES = {
     "light": ["turn_on", "turn_off"],
     "switch": ["turn_on", "turn_off"],
     "binary_sensor": [],
-    "climate": ["", "set_preset_mode", "set_fan_mode", "set_humidity", "set_swing_mode", "set_temperature", "set_aux_heat"],
+    "climate": ["set_hvac_mode", "set_preset_mode", "set_fan_mode", "set_humidity", "set_swing_mode", "set_temperature", "set_aux_heat"],
 }
 
 
@@ -159,7 +174,9 @@ class BaseEntity(CoordinatorEntity):
         return self._coordinator.data
 
     @property
-    def is_on(self) -> bool:
+    def is_on(self) -> bool | None:
+        if not self.available:
+            return None
         return self._coordinator.is_on()
 
     def _all_values(self, name, domains=[]):
