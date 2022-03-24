@@ -22,3 +22,4 @@ class Entity(BaseEntity, BinarySensorEntity):
 
     def __init__(self, coordinator):
         super().__init__(coordinator)
+        self._attr_domain = "binary_sensor"

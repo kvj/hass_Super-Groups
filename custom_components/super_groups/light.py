@@ -26,19 +26,13 @@ class Entity(BaseEntity, LightEntity):
 
     def __init__(self, coordinator):
         super().__init__(coordinator)
+        self._attr_domain = "light"
 
     async def async_turn_on(self, **kwargs):
         return await self._coordinator.async_call_service("turn_on", kwargs)
 
     async def async_turn_off(self, **kwargs):
         return await self._coordinator.async_call_service("turn_off", kwargs)
-
-    @property
-    def supported_features(self):
-        joined = 0
-        for one in self._all_values("supported_features"):
-            joined = joined | one
-        return joined
 
     @property
     def supported_color_modes(self):

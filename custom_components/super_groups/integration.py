@@ -21,6 +21,7 @@ _ICON_MAP = {
     "binary_sensor": "mdi:checkbox-marked-circle",
     "switch": "mdi:flash",
     "climate": "mdi:hvac",
+    "cover": "mdi:window-open",
 }
 
 def entries_from_registry(hass, entity_reg, device_reg, entry, id):

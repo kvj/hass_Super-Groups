@@ -147,10 +147,22 @@ class BaseEntity(CoordinatorEntity):
     def __init__(self, coordinator: Coordinator):
         super().__init__(coordinator)
         self._coordinator = coordinator
+        self._attr_domain = "domain"
 
     @property
     def available(self) -> bool:
         return not _any(self._coordinator.states(), "unavailable")
+
+    @property
+    def device_class(self):
+        return self._all(self._all_values("device_class", domains=[self._attr_domain]))
+
+    @property
+    def supported_features(self):
+        joined = 0
+        for one in self._all_values("supported_features", domains=[self._attr_domain]):
+            joined = joined | one
+        return joined
 
     @property
     def name(self) -> str:
@@ -174,7 +186,7 @@ class BaseEntity(CoordinatorEntity):
         return self._coordinator.data
 
     @property
-    def is_on(self) -> bool | None:
+    def is_on(self) -> bool:
         if not self.available:
             return None
         return self._coordinator.is_on()
