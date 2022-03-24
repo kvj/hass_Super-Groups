@@ -26,12 +26,11 @@ class Coordinator(DataUpdateCoordinator):
         )
         self.entry = entry
         self._data = data
-        _LOGGER.debug("New Coordinator: %s", data)
 
     async def async_config_entry_first_refresh(self):
         self._state_listener = async_track_state_change(
             self.hass,
-            entity_ids=[x.entity_id for x in await self.all_entries()],
+            entity_ids=[x.entity_id for x in await self._all_entries()],
             action=self._async_on_state_change
         )
         return await super().async_config_entry_first_refresh()
@@ -41,7 +40,7 @@ class Coordinator(DataUpdateCoordinator):
                       entity_id, from_state, to_state)
         self.async_set_updated_data(await self.async_update())
 
-    async def all_entries(self):
+    async def _all_entries(self):
         entity_reg = await async_get_registry(self.hass)
         result = dict()
         entry = self._data.get("items", {})
@@ -58,8 +57,6 @@ class Coordinator(DataUpdateCoordinator):
         state = self.hass.states.get(entry.entity_id)
         if not state:
             return None
-        if state.state not in ("on", "off"):
-            return None
         return (entry, state)
 
     @property
@@ -71,7 +68,7 @@ class Coordinator(DataUpdateCoordinator):
         return "%s-%s" % (self.config_id, self.entity_id)
 
     async def async_update(self):
-        entries = await self.all_entries()
+        entries = await self._all_entries()
         return list(filter(lambda x: x != None, map(lambda x: self._with_valid_state(x), entries)))
 
     async def async_unload(self):
@@ -89,12 +86,20 @@ class Coordinator(DataUpdateCoordinator):
     def config_id(self):
         return self.entry.entry_id
 
+    def states(self, domains=[]):
+        return list(
+            filter(
+                lambda x: x != None, 
+                map(lambda x: x[1] if x[1].domain in domains or len(domains) == 0 else None, self.data)
+            )
+        )
+
     def is_on(self):
-        _LOGGER.debug("is_on: %s = %s", self.entity_id,
-                      [x[1].state for x in self.data])
+        states = self.states(domains=["light", "switch", "binary_sensor"])
+        _LOGGER.debug("is_on: %s = %s", self.entity_id, states)
         if self._data.get("all_on") == True:
-            return not _any([x[1].state == "on" for x in self.data], False)
-        return _any([x[1].state == "on" for x in self.data], True)
+            return not _any([x.state == "on" for x in states], False)
+        return _any([x.state == "on" for x in states], True)
 
     async def async_call_service(self, name, args):
         ids = {}
@@ -118,6 +123,7 @@ _SERVICES = {
     "light": ["turn_on", "turn_off"],
     "switch": ["turn_on", "turn_off"],
     "binary_sensor": [],
+    "climate": ["", "set_preset_mode", "set_fan_mode", "set_humidity", "set_swing_mode", "set_temperature", "set_aux_heat"],
 }
 
 
@@ -126,6 +132,10 @@ class BaseEntity(CoordinatorEntity):
     def __init__(self, coordinator: Coordinator):
         super().__init__(coordinator)
         self._coordinator = coordinator
+
+    @property
+    def available(self) -> bool:
+        return not _any(self._coordinator.states(), "unavailable")
 
     @property
     def name(self) -> str:
@@ -151,3 +161,30 @@ class BaseEntity(CoordinatorEntity):
     @property
     def is_on(self) -> bool:
         return self._coordinator.is_on()
+
+    def _all_values(self, name, domains=[]):
+
+        return list(filter(
+            lambda x: x != None, 
+            [x.attributes.get(name) if name else x.state for x in self._coordinator.states(domains=domains)]
+        ))
+
+    def _avg(self, arr):
+        total = 0
+        for item in arr:
+            total += item
+        return total / len(arr) if len(arr) > 0 else None
+
+    def _first(self, arr, default=None):
+        if len(arr):
+            return arr[0]
+        return default
+
+    def _all(self, arr, default=None):
+        if len(arr):
+            first = arr[0]
+            for item in arr:
+                if item != first:
+                    return default
+            return first
+        return default

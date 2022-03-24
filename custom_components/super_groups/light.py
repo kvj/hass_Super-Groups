@@ -1,6 +1,5 @@
 from homeassistant.components.light import (
     LightEntity,
-    SUPPORT_BRIGHTNESS, SUPPORT_COLOR_TEMP, SUPPORT_EFFECT, SUPPORT_FLASH, SUPPORT_COLOR, SUPPORT_TRANSITION, SUPPORT_WHITE_VALUE
 )
 
 import logging
@@ -22,9 +21,6 @@ async def async_setup_entry(hass, entry, add_entities):
     add_entities(entities)
     return True
 
-_ALL_SUPPORTED = {SUPPORT_BRIGHTNESS, SUPPORT_COLOR_TEMP, SUPPORT_EFFECT,
-                  SUPPORT_FLASH, SUPPORT_COLOR, SUPPORT_TRANSITION, SUPPORT_WHITE_VALUE}
-
 
 class Entity(BaseEntity, LightEntity):
 
@@ -32,22 +28,16 @@ class Entity(BaseEntity, LightEntity):
         super().__init__(coordinator)
 
     async def async_turn_on(self, **kwargs):
-        _LOGGER.debug("LightEntity::turn_on: %s", kwargs)
         return await self._coordinator.async_call_service("turn_on", kwargs)
 
     async def async_turn_off(self, **kwargs):
         return await self._coordinator.async_call_service("turn_off", kwargs)
 
-    def _all_values(self, name):
-        return list(filter(lambda x: x != None, [x[1].attributes.get(name) for x in self.entries]))
-
     @property
     def supported_features(self):
         joined = 0
         for one in self._all_values("supported_features"):
-            for s in _ALL_SUPPORTED:
-                if s & one:
-                    joined = joined | s
+            joined = joined | one
         return joined
 
     @property
@@ -58,12 +48,6 @@ class Entity(BaseEntity, LightEntity):
         if len(all_modes) == 0:
             return None
         return all_modes
-
-    def _avg(self, arr):
-        total = 0
-        for item in arr:
-            total += item
-        return total / len(arr) if len(arr) > 0 else None
 
     @property
     def brightness(self):

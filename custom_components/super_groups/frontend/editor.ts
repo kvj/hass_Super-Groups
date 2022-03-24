@@ -70,12 +70,13 @@ export class SuperGroupsEditor extends LitElement {
         "light": "Light",
         "binary_sensor": "Binary Sensor",
         "switch": "Switch",
+        "climate": "Climate",
     };
 
     @property()
     _domainSelector : {} = {
         select: {
-            options: ["Light", "Binary Sensor", "Switch"],
+            options: ["Light", "Binary Sensor", "Switch", "Climate"],
         },
     };
 

@@ -19,7 +19,8 @@ def entries_by_domain(hass, entry, domain):
 _ICON_MAP = {
     "light": "mdi:lightbulb",
     "binary_sensor": "mdi:checkbox-marked-circle",
-    "switch": "mdi:flash"
+    "switch": "mdi:flash",
+    "climate": "mdi:hvac",
 }
 
 def entries_from_registry(hass, entity_reg, device_reg, entry, id):
