@@ -26,6 +26,7 @@ class Entity(BaseEntity, climate.ClimateEntity):
 
     def __init__(self, coordinator):
         super().__init__(coordinator)
+        self._attr_domain = "climate"
 
     @property
     def temperature_unit(self):
