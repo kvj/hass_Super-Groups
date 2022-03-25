@@ -27,11 +27,11 @@ class Entity(BaseEntity, cover.CoverEntity):
 
     @property
     def current_cover_position(self):
-        return self._avg(self._all_values("current_cover_position"))
+        return self._avg(self._all_values("current_position"))
 
     @property
     def current_cover_tilt_position(self):
-        return self._avg(self._all_values("current_cover_tilt_position"))
+        return self._avg(self._all_values("current_tilt_position"))
 
     def _is_any_state(self, state):
         return state in self._all_values(None, domains=["cover"])
