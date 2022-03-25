@@ -127,11 +127,12 @@ class Coordinator(DataUpdateCoordinator):
 _ON_STATES = {
     "light": ["on"],
     "switch": ["on"],
-    "binary_switch": ["on"],
+    "binary_sensor": ["on"],
 }
 
 _OFF_STATES = {
     "climate": ["off"],
+    "cover": ["closed"],
 }
 
 _SERVICES = {
@@ -139,6 +140,7 @@ _SERVICES = {
     "switch": ["turn_on", "turn_off"],
     "binary_sensor": [],
     "climate": ["set_hvac_mode", "set_preset_mode", "set_fan_mode", "set_humidity", "set_swing_mode", "set_temperature", "set_aux_heat"],
+    "cover": ["open_cover", "close_cover", "set_cover_position", "stop_cover", "open_cover_tilt", "close_cover_tilt", "set_cover_tilt_position", "stop_cover_tilt"],
 }
 
 
@@ -151,7 +153,7 @@ class BaseEntity(CoordinatorEntity):
 
     @property
     def available(self) -> bool:
-        return not _any(self._coordinator.states(), "unavailable")
+        return not _any(self._all_values(None), "unavailable")
 
     @property
     def device_class(self):
@@ -192,7 +194,6 @@ class BaseEntity(CoordinatorEntity):
         return self._coordinator.is_on()
 
     def _all_values(self, name, domains=[]):
-
         return list(filter(
             lambda x: x != None, 
             [x.attributes.get(name) if name else x.state for x in self._coordinator.states(domains=domains)]
@@ -209,7 +210,8 @@ class BaseEntity(CoordinatorEntity):
             return arr[0]
         return default
 
-    def _all(self, arr, default=None):
+    def _all(self, arr, default=None): 
+        """Return value only when all values are the same, default otherwise"""
         if len(arr):
             first = arr[0]
             for item in arr:
@@ -217,3 +219,11 @@ class BaseEntity(CoordinatorEntity):
                     return default
             return first
         return default
+
+    def _union(self, attr_name): # Union all values + preserve order
+        all_vals = []
+        for one in self._all_values(attr_name):
+            for val in one:
+                if val not in all_vals:
+                    all_vals.append(val)
+        return all_vals

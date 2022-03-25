@@ -2,6 +2,7 @@ import { html, css, LitElement } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { EditorParams } from './editor';
 import './editor';
+import './confirm';
 
 const tabs = [
     {
@@ -32,6 +33,9 @@ export class SuperGroupsPanel extends LitElement {
     @state()
     _editorParams: EditorParams | undefined = undefined;
 
+    @state()
+    private _removeItem: EditorParams | undefined = undefined;
+
     _columns(narrow: boolean) {
         const columns: any = {
             id: {
@@ -50,9 +54,11 @@ export class SuperGroupsPanel extends LitElement {
                 sortable: true,
                 filterable: true,
                 direction: "asc",
-                width: "300px",
+                width: narrow? undefined: "300px",
                 grows: narrow? true: false,
-                template: (value: string) => html`${value}`,
+                template: (value: string, row: any) => html`
+                    <a href="/config/devices/device/${row["device_id"]}">${value}</a>
+                `,
             },
         };
         if (!narrow) {
@@ -68,13 +74,30 @@ export class SuperGroupsPanel extends LitElement {
                 },
             };
         }
-        columns["remove"] = {
-            title: "Remove",
+        columns["edit"] = {
+            title: "",
             filterable: false,
             grows: false,
-            template: (value: string, row?: any) => {
+            template: (value: string, row: EditorParams) => {
                 const _action = () => {
-                    this._remove(row.id);
+                    this._edit(row)
+                };
+                return html`
+                    <mwc-button
+                        @click=${_action}
+                    >
+                        Edit
+                    </mwc-button>
+                `;
+            }
+        };
+        columns["remove"] = {
+            title: "",
+            filterable: false,
+            grows: false,
+            template: (value: string, row: EditorParams) => {
+                const _action = () => {
+                    this._removeItem = row;
                 };
                 return html`
                     <mwc-button
@@ -88,10 +111,12 @@ export class SuperGroupsPanel extends LitElement {
         return columns;
     }
 
-    async _remove(id: string) {
+    async _remove(event: any) {
+        console.log('_remove', event);
+        const row = event.detail.value;
         await this.hass.connection.sendMessagePromise({
             type: "super_groups/remove_entry",
-            entry_id: id,
+            entry_id: row.id,
         });
         this._load();
     }
@@ -112,9 +137,9 @@ export class SuperGroupsPanel extends LitElement {
         return [];
     }
 
-    _edit(item: any) {
+    _edit(item: EditorParams) {
         // console.log("_edit:", item.detail.id);
-        const _item: any = this._items.find((_item: any) => _item.id == item.detail.id);
+        const _item: any = this._items.find((_item: any) => _item.id == item.id);
         this._editorParams = {
             id: _item.id,
             title: _item.title,
@@ -169,14 +194,12 @@ export class SuperGroupsPanel extends LitElement {
             .tabs=${tabs}
             .columns=${this._columns(this.narrow)}
             .data=${this._getItems()}
-            @row-click=${this._edit}
             id="id"
             hasFab
-            clickable
         >
             <ha-fab
                 slot="fab"
-                label="Add new group"
+                label="Add new"
                 extended
                 @click=${this._add}
             >
@@ -188,6 +211,12 @@ export class SuperGroupsPanel extends LitElement {
             @save=${this._save}
         >
         </super-groups-editor>
+        <sg-confirmation-dialog
+            .data=${this._removeItem}
+            @yes=${this._remove}
+            text="Really remove?"
+        >
+        </sg-confirmation-dialog>
         `;
     }
 }

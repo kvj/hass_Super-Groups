@@ -36,12 +36,7 @@ class Entity(BaseEntity, LightEntity):
 
     @property
     def supported_color_modes(self):
-        all_modes = set()
-        for one in self._all_values("supported_color_modes"):
-            all_modes = all_modes.union(one)
-        if len(all_modes) == 0:
-            return None
-        return all_modes
+        return self._union("supported_color_modes")
 
     @property
     def brightness(self):

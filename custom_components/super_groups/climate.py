@@ -75,10 +75,7 @@ class Entity(BaseEntity, climate.ClimateEntity):
 
     @property
     def hvac_modes(self):
-        all_modes = set()
-        for one in self._all_values("hvac_modes"):
-            all_modes = all_modes.union(one)
-        return list(all_modes)
+        return self._union("hvac_modes")
 
     @property
     def preset_mode(self):
@@ -86,21 +83,27 @@ class Entity(BaseEntity, climate.ClimateEntity):
 
     @property
     def preset_modes(self):
-        all_modes = set()
-        for one in self._all_values("preset_modes"):
-            all_modes = all_modes.union(one)
-        return list(all_modes)
+        return self._union("preset_modes")
+
+    @property
+    def fan_mode(self):
+        return self._all(self._all_values("fan_mode"), "off")
+
+    @property
+    def fan_modes(self):
+        return self._union("fan_modes")
+
+    @property
+    def swing_mode(self):
+        return self._all(self._all_values("swing_mode"), "off")
+
+    @property
+    def swing_modes(self):
+        return self._union("swing_modes")
 
     @property
     def is_aux_heat(self):
         return self._all(self._all_values("is_aux_heat"), False)
-
-    @property
-    def supported_features(self):
-        joined = 0
-        for one in self._all_values("supported_features"):
-            joined = joined | one
-        return joined
 
     async def async_set_hvac_mode(self, **kwargs):
         return await self._coordinator.async_call_service("set_hvac_mode", kwargs)

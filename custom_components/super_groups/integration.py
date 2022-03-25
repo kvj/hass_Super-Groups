@@ -64,6 +64,7 @@ async def async_all_entries(hass, entry):
             "domain": value.get("domain"),
             "all_on": value.get("all_on", False),
             "icon": entity.icon if entity and entity.icon else _ICON_MAP.get(value.get("domain")),
+            "device_id": device.id,
             "entry": items,
             "members": make_items_list(entity_reg, device_reg, items)
         })

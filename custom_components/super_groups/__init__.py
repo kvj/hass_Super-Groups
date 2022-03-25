@@ -48,7 +48,7 @@ async def async_setup(hass, config) -> bool:
         "super_groups",
         "super-groups-panel",
         sidebar_title="Super Groups",
-        sidebar_icon="mdi:hexagon-multiple",
+        sidebar_icon="mdi:google-circles-communities",
         module_url="/super_groups_ui/index.js",
         embed_iframe=False,
         require_admin=True

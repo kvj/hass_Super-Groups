@@ -46,7 +46,7 @@ class Entity(BaseEntity, cover.CoverEntity):
 
     @property
     def is_closed(self):
-        return self._all(self._all_values(None, domains=["cover"]))
+        return self._all(self._all_values(None, domains=["cover"])) == "closed"
 
     async def async_open_cover(self, **kwargs):
         return await self._coordinator.async_call_service("open_cover", kwargs)

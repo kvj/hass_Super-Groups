@@ -200,6 +200,11 @@ export class SuperGroupsEditor extends LitElement {
 
     static get styles() {
         return css`
+            ha-dialog {
+                --mdc-dialog-heading-ink-color: var(--primary-text-color);
+                --mdc-dialog-content-ink-color: var(--primary-text-color);
+                --justify-action-buttons: space-between;
+            }                    
             .bottomRow {
                 text-align: center;
             }
