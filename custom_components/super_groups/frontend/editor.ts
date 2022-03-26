@@ -13,6 +13,7 @@ export type EditorParams = {
     allOn: boolean;
     entry: EntryRecord;
     domain: string;
+    stat: string | undefined;
 };
 
 @customElement("super-groups-editor")
@@ -72,13 +73,14 @@ export class SuperGroupsEditor extends LitElement {
         "switch": "Switch",
         "climate": "Climate",
         "cover": "Cover",
+        "sensor": "Sensor",
     };
 
-    @property()
-    _domainSelector : {} = {
-        select: {
-            options: ["Light", "Binary Sensor", "Switch", "Climate", "Cover"],
-        },
+    _statFnMap: any = {
+        "avg": "Avg",
+        "min": "Min",
+        "max": "Max",
+        "sum": "Sum",
     };
 
     @property()
@@ -87,14 +89,10 @@ export class SuperGroupsEditor extends LitElement {
     };
 
     _onDomainChanged(event: any) {
-        for (const [key, value] of Object.entries(this._domainMap)) {
-            if (value == event.detail.value) {
-                this._data = {
-                    ...this._data,
-                    domain: key
-                };
-            }
-        }
+        this._data = {
+            ...this._data,
+            domain: Object.entries(this._domainMap).find((e) => e[1] == event.detail.value)[0],
+        };
     };
 
     _asArray(value: string | string[] | undefined) {
@@ -121,6 +119,7 @@ export class SuperGroupsEditor extends LitElement {
         let titleRow = html``;
         let dialogTitle = this._data.title;
         let domainSelector = html``;
+        let statFnSelector = html``;
         if (!this._data.id) {
             titleRow = html`
                 <paper-input
@@ -134,16 +133,44 @@ export class SuperGroupsEditor extends LitElement {
                 </paper-input>
             `;
             dialogTitle = 'New Super Group';
+            const _domainSelector = {
+                select: {
+                    options: Object.values(this._domainMap),
+                },
+            };
             domainSelector = html`
                 <ha-selector
                     label="Group type"
                     .hass=${this.hass}
-                    .selector=${this._domainSelector}
+                    .selector=${_domainSelector}
                     .value=${this._domainMap[this._data.domain]}
                     @value-changed=${this._onDomainChanged}
                 >
                 </ha-selector>    
             `;
+            if (this._data.domain == "sensor") {
+                const _statSelector = {
+                    select: {
+                        options: Object.values(this._statFnMap),
+                    }
+                };
+                const _onStatSelected = (evt: any) => {
+                    this._data = {
+                        ...this._data,
+                        stat: Object.entries(this._statFnMap).find((e) => e[1] == evt.detail.value)[0],
+                    };            
+                };
+                statFnSelector = html`
+                    <ha-selector
+                        label="Statistic type"
+                        .hass=${this.hass}
+                        .selector=${_statSelector}
+                        .value=${this._statFnMap[this._data.stat]}
+                        @value-changed=${_onStatSelected}
+                    >
+                    </ha-selector>    
+                `;
+            }
         }
         return html`
         <ha-dialog 
@@ -159,6 +186,9 @@ export class SuperGroupsEditor extends LitElement {
                     </div>
                     <div>
                         ${domainSelector}
+                    </div>
+                    <div>
+                        ${statFnSelector}
                     </div>
                     <div>
                         <ha-selector

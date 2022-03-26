@@ -20,8 +20,9 @@ _ICON_MAP = {
     "light": "mdi:lightbulb",
     "binary_sensor": "mdi:checkbox-marked-circle",
     "switch": "mdi:flash",
-    "climate": "mdi:hvac",
+    "climate": "mdi:thermostat",
     "cover": "mdi:window-open",
+    "sensor": "mdi:eye",
 }
 
 def entries_from_registry(hass, entity_reg, device_reg, entry, id):
@@ -62,6 +63,7 @@ async def async_all_entries(hass, entry):
             "id": key,
             "title": title,
             "domain": value.get("domain"),
+            "stat": value.get("stat"),
             "all_on": value.get("all_on", False),
             "icon": entity.icon if entity and entity.icon else _ICON_MAP.get(value.get("domain")),
             "device_id": device.id,
@@ -77,6 +79,7 @@ async def add_new_entry(hass, entry, request):
         "title": request["title"],
         "all_on": request["all_on"],
         "domain": request["domain"],
+        "stat": request.get("stat", "avg"),
         "items": request["items"]
     }
     await reload_config_entry(hass, entry, data)

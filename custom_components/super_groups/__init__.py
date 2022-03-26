@@ -91,6 +91,7 @@ _ITEM_SCHEMA = vol.Schema({
     vol.Optional("config_id"): str,
     vol.Required("title"): str,
     vol.Required("domain"): str,
+    vol.Optional("stat"): str,
     vol.Required("all_on"): bool,
     vol.Required("items"): _ITEM_SCHEMA
 })

@@ -133,6 +133,7 @@ _ON_STATES = {
 _OFF_STATES = {
     "climate": ["off"],
     "cover": ["closed"],
+    "sensor": [0, "0", "unknown"],
 }
 
 _SERVICES = {

@@ -68,9 +68,11 @@ export class SuperGroupsPanel extends LitElement {
                 filterable: false,
                 direction: "asc",
                 grows: true,
-                template: (value: any[]) => {
+                template: (value: any[], row: any) => {
                     const list = value.map((e) => e.title);
-                    return html`${list.join(", ")}`
+                    let suffix = "";
+                    if (row["domain"] == "sensor") suffix = ` (${row["stat"]})`;
+                    return html`${list.join(", ")}${suffix}`
                 },
             };
         }
@@ -146,6 +148,7 @@ export class SuperGroupsPanel extends LitElement {
             allOn: _item.all_on,
             domain: _item.domain,
             entry: _item.entry,
+            stat: _item.stat,
         };
     }
 
@@ -155,6 +158,7 @@ export class SuperGroupsPanel extends LitElement {
             title: "New Group",
             allOn: false,
             domain: "light",
+            stat: "avg",
             entry: {
                 entity_id: [],
                 device_id: [],
@@ -174,6 +178,7 @@ export class SuperGroupsPanel extends LitElement {
             type: "super_groups/add_entry",
             title: entry.title,
             domain: entry.domain,
+            stat: entry.stat,
             all_on: entry.allOn,
             items: entry.entry
         };
