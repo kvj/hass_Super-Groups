@@ -24,8 +24,12 @@ class Entity(BaseEntity, SwitchEntity):
         super().__init__(coordinator)
 
     async def async_turn_on(self, **kwargs):
+        self._empty_state = True
+        self.save_empty_state()
         return await self._coordinator.async_call_service("turn_on", kwargs)
 
     async def async_turn_off(self, **kwargs):
+        self._empty_state = False
+        self.save_empty_state()
         return await self._coordinator.async_call_service("turn_off", kwargs)
 

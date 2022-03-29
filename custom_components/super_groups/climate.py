@@ -27,6 +27,11 @@ class Entity(BaseEntity, climate.ClimateEntity):
     def __init__(self, coordinator):
         super().__init__(coordinator)
         self._attr_domain = "climate"
+        self._initial_state = 20
+        self._supported_features = 1 # Temperature
+
+    def empty_from_state(self, state):
+        return state.attributes.get("temperature", self._empty_state)
 
     @property
     def temperature_unit(self):
@@ -42,7 +47,7 @@ class Entity(BaseEntity, climate.ClimateEntity):
 
     @property
     def target_temperature(self):
-        return self._avg(self._all_values("temperature"))
+        return self._avg(self._all_values("temperature"), self._empty_state)
 
     @property
     def target_humidity(self):
@@ -66,16 +71,22 @@ class Entity(BaseEntity, climate.ClimateEntity):
 
     @property
     def hvac_action(self):
+        if self.is_empty:
+            return "heating"
         return self._all(self._all_values("hvac_action"), "off")
 
     @property
     def hvac_mode(self):
         if not self.available:
             return None
+        if self.is_empty:
+            return "heat"
         return self._all(self._all_values(None, domains=["climate"]), "off")
 
     @property
     def hvac_modes(self):
+        if self.is_empty:
+            return ["heat"]
         return self._union("hvac_modes")
 
     @property
@@ -84,6 +95,8 @@ class Entity(BaseEntity, climate.ClimateEntity):
 
     @property
     def preset_modes(self):
+        if self.is_empty:
+            return ["none"]
         return self._union("preset_modes")
 
     @property
@@ -122,6 +135,8 @@ class Entity(BaseEntity, climate.ClimateEntity):
         return await self._coordinator.async_call_service("set_swing_mode", kwargs)
 
     async def async_set_temperature(self, **kwargs):
+        self._empty_state = kwargs.get("temperature", self._empty_state)
+        self.save_empty_state()
         return await self._coordinator.async_call_service("set_temperature", kwargs)
 
     async def async_turn_aux_heat_on(self):
