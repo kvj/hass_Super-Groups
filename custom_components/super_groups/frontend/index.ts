@@ -71,7 +71,7 @@ export class SuperGroupsPanel extends LitElement {
                 template: (value: any[], row: any) => {
                     const list = value.map((e) => e.title);
                     let suffix = "";
-                    if (row["domain"] == "sensor") suffix = ` (${row["stat"]})`;
+                    if (["sensor", "number"].includes(row["domain"])) suffix = ` (${row["stat"]})`;
                     return html`${list.join(", ")}${suffix}`
                 },
             };

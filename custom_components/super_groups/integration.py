@@ -23,6 +23,7 @@ _ICON_MAP = {
     "climate": "mdi:thermostat",
     "cover": "mdi:window-open",
     "sensor": "mdi:eye",
+    "number": "mdi:numeric",
 }
 
 def entries_from_registry(hass, entity_reg, device_reg, entry, id):

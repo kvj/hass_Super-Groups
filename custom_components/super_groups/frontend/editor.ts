@@ -74,6 +74,7 @@ export class SuperGroupsEditor extends LitElement {
         "climate": "Climate",
         "cover": "Cover",
         "sensor": "Sensor",
+        "number": "Number",
     };
 
     _statFnMap: any = {
@@ -148,7 +149,7 @@ export class SuperGroupsEditor extends LitElement {
                 >
                 </ha-selector>    
             `;
-            if (this._data.domain == "sensor") {
+            if (["sensor", "number"].includes(this._data.domain)) {
                 const _statSelector = {
                     select: {
                         options: Object.values(this._statFnMap),
