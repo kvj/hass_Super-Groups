@@ -1,59 +1,50 @@
 from homeassistant.components.light import (
     LightEntity,
+    ColorMode,
 )
 
 import logging
+import statistics
 
-from .integration import entries_by_domain, set_coordinator
-from .groups import BaseEntity
+from .coordinator import ToggleBaseEntity
 from .constants import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
-
 async def async_setup_entry(hass, entry, add_entities):
-    entities = []
-    for (key, value) in entries_by_domain(hass, entry, "light"):
-        c = set_coordinator(hass, entry, key, value)
-        await c.async_config_entry_first_refresh()
-        entities.append(Entity(c))
-
-    add_entities(entities)
+    coordinator = hass.data[DOMAIN]["devices"][entry.entry_id]
+    if coordinator.is_of_type("light"):
+        add_entities([_Entity(coordinator)])
     return True
 
-
-class Entity(BaseEntity, LightEntity):
+class _Entity(ToggleBaseEntity, LightEntity):
 
     def __init__(self, coordinator):
         super().__init__(coordinator)
-        self._attr_domain = "light"
-
-    async def async_turn_on(self, **kwargs):
-        self._empty_state = True
-        self.save_empty_state()
-        return await self._coordinator.async_call_service("turn_on", kwargs)
-
-    async def async_turn_off(self, **kwargs):
-        self._empty_state = False
-        self.save_empty_state()
-        return await self._coordinator.async_call_service("turn_off", kwargs)
+        self.with_name(f"light", coordinator._config["name"])
 
     @property
     def supported_color_modes(self):
-        return self._union("supported_color_modes")
+        modes = set()
+        for attr in self.attr("light", "supported_color_modes"):
+            if attr:
+                modes |= set(attr)
+        if len(modes) == 0:
+            modes.add(ColorMode.ONOFF)
+        return modes
+
+    @property
+    def color_mode(self):
+        return self.attr_first("light", "color_mode", ColorMode.ONOFF)
 
     @property
     def brightness(self):
-        return self._avg(self._all_values("brightness"))
+        return self.attr_fn("light", "brightness", lambda x: statistics.mean(x))
 
     @property
-    def min_mireds(self):
-        return min(self._all_values("min_mireds"))
+    def rgb_color(self):
+        return self.attr_first("light", "rgb_color")
 
     @property
-    def max_mireds(self):
-        return max(self._all_values("max_mireds"))
-
-    @property
-    def color_temp(self):
-        return self._avg(self._all_values("color_temp"))
+    def rgbw_color(self):
+        return self.attr_first("light", "rgbw_color")
