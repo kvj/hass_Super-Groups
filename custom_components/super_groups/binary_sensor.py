@@ -2,24 +2,23 @@ from homeassistant.components.binary_sensor import BinarySensorEntity
 
 import logging
 
-from .integration import entries_by_domain, set_coordinator
-from .groups import BaseEntity
+from .coordinator import BaseEntity
 from .constants import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
 async def async_setup_entry(hass, entry, add_entities):
-    entities = []
-    for (key, value) in entries_by_domain(hass, entry, "binary_sensor"):
-        c = set_coordinator(hass, entry, key, value)
-        await c.async_config_entry_first_refresh()
-        entities.append(Entity(c))
-
-    add_entities(entities)
+    coordinator = hass.data[DOMAIN]["devices"][entry.entry_id]
+    if coordinator.is_of_type("binary_sensor"):
+        add_entities([_Entity(coordinator)])
     return True
 
-class Entity(BaseEntity, BinarySensorEntity):
+class _Entity(BaseEntity, BinarySensorEntity):
 
     def __init__(self, coordinator):
         super().__init__(coordinator)
-        self._attr_domain = "binary_sensor"
+        self.with_name(f"binary_sensor", coordinator._config["name"])
+
+    @property
+    def is_on(self) -> bool:
+        return self.coordinator.data.get("on")

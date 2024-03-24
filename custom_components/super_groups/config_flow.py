@@ -1,52 +1,61 @@
-from .integration import get_config_entry
+from collections.abc import Mapping
+from typing import Any, cast
+
 from homeassistant import config_entries
 import homeassistant.helpers.config_validation as cv
-from .constants import DOMAIN
+from homeassistant.helpers.selector import selector
 
+from homeassistant.const import (
+    CONF_NAME,
+)
 
-import logging
+from homeassistant.helpers.schema_config_entry_flow import (
+    SchemaConfigFlowHandler,
+    SchemaFlowFormStep,
+)
+
+from .constants import (
+    DOMAIN,
+    CONF_ENTITIES,
+    CONF_INVERT,
+    CONF_TOGGLE,
+    CONF_TYPE,
+    CONF_TYPES,
+)
+
 import voluptuous as vol
-from datetime import datetime
+import logging
 
 _LOGGER = logging.getLogger(__name__)
 
-def _validate(user_input):
-    errors = {}
-    return errors
+OPTIONS_SCHEMA = vol.Schema({
+    vol.Required(CONF_ENTITIES, description={"suggested_value": []}): selector({"entity": {"multiple": True}}),
+    vol.Required(CONF_INVERT, description={"suggested_value": False}): selector({"boolean": {}}),
+    vol.Optional(CONF_TOGGLE): selector({"entity": {"multiple": False}}),
+})
 
-def _gen_init_schema(data: dict):
-    types = {vol.Required(x[0], default=data.get(x[0], True)): bool for x in entity_types}
-    return vol.Schema({
-        vol.Required("name", default=data.get("name")): cv.string,
-        **types,
-    })
+CONFIG_SCHEMA = vol.Schema({
+    vol.Required(CONF_NAME): selector({"text": {}}),
+    vol.Required(CONF_TYPE, description={"suggested_value": "binary_sensor"}): selector({"select": {"options": CONF_TYPES,}}),
+}).extend(OPTIONS_SCHEMA.schema)
 
-def _gen_options_schema(data: dict):
-    types = {vol.Required(x[0], default=data.get(x[0], False)): bool for x in entity_types}
-    return vol.Schema({
-        **types,
-    })
+async def _validate_options(step, user_input):
+    _LOGGER.debug(f"_validate_options: {user_input}, {step}, {step.options}")
+    user_input[CONF_TYPE] = step.options[CONF_TYPE]
+    return user_input
 
+CONFIG_FLOW = {
+    "user": SchemaFlowFormStep(CONFIG_SCHEMA),
+}
 
-class ConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
+OPTIONS_FLOW = {
+    "init": SchemaFlowFormStep(OPTIONS_SCHEMA, _validate_options),
+}
 
-    # def async_get_options_flow(config_entry):
-    #     return OptionsFlowHandler(config_entry)
+class ConfigFlowHandler(SchemaConfigFlowHandler, domain=DOMAIN):
 
-    async def async_step_user(self, user_input):
-        if get_config_entry(self.hass, None):
-            return self.async_abort(reason="already_registered")
-        return self.async_create_entry(
-            title="Super Groups",
-            options={},
-            data={},
-        )
+    config_flow = CONFIG_FLOW
+    options_flow = OPTIONS_FLOW
 
-class OptionsFlowHandler(config_entries.OptionsFlow):
-
-    def __init__(self, config_entry):
-        self.config_entry = config_entry
-
-    async def async_step_init(self, user_input=None):
-        _LOGGER.debug(f"OptionsFlowHandler: {user_input} {self.config_entry}")
-        return self.async_create_entry(title="", data=self.config_entry.as_dict()["options"])
+    def async_config_entry_title(self, options: Mapping[str, Any]) -> str:
+        return cast(str, options[CONF_NAME])

@@ -1,29 +1,36 @@
 {
-  "title": "Super Groups",
+  "title": "Super Group",
   "config": {
     "step": {
       "user": {
-        "title": "Dialog title",
+        "title": "New Super Group",
         "data": {
-          "name": "Name"
+          "name": "Name",
+          "entities": "Group members",
+          "invert": "Invert value",
+          "type_": "Entity type",
+          "toggle": "Update entity state"
         }
       }
     },
     "error": {
-      "error": "Unknown error"
     }
+  },
+  "issues": {
   },
   "options": {
     "step": {
       "init": {
-        "title": "Dialog title",
+        "title": "Super Group configuration",
         "data": {
-          "name": "Name"
+          "entities": "Group members",
+          "invert": "Invert value",
+          "type_": "Entity type",
+          "toggle": "Update entity state"
         }
       }
     },
     "error": {
-      "error": "Unknown error"
     }
   }
 }

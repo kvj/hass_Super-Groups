@@ -2,34 +2,19 @@ from homeassistant.components.switch import SwitchEntity
 
 import logging
 
-from .integration import entries_by_domain, set_coordinator
-from .groups import BaseEntity
+from .coordinator import ToggleBaseEntity
 from .constants import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
 async def async_setup_entry(hass, entry, add_entities):
-    entities = []
-    for (key, value) in entries_by_domain(hass, entry, "switch"):
-        c = set_coordinator(hass, entry, key, value)
-        await c.async_config_entry_first_refresh()
-        entities.append(Entity(c))
-
-    add_entities(entities)
+    coordinator = hass.data[DOMAIN]["devices"][entry.entry_id]
+    if coordinator.is_of_type("switch"):
+        add_entities([_Entity(coordinator)])
     return True
 
-class Entity(BaseEntity, SwitchEntity):
+class _Entity(ToggleBaseEntity, SwitchEntity):
 
     def __init__(self, coordinator):
         super().__init__(coordinator)
-
-    async def async_turn_on(self, **kwargs):
-        self._empty_state = True
-        self.save_empty_state()
-        return await self._coordinator.async_call_service("turn_on", kwargs)
-
-    async def async_turn_off(self, **kwargs):
-        self._empty_state = False
-        self.save_empty_state()
-        return await self._coordinator.async_call_service("turn_off", kwargs)
-
+        self.with_name(f"switch", coordinator._config["name"])
