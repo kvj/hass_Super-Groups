@@ -59,8 +59,6 @@ class Coordinator(DataUpdateCoordinator):
         self._entry = entry
         self._entry_id = entry.entry_id
 
-        self._config = entry.as_dict()["options"]
-
     async def _async_update(self):
         return {}
 
@@ -71,6 +69,7 @@ class Coordinator(DataUpdateCoordinator):
         })
 
     async def async_load(self):
+        self._config = self._entry.as_dict()["options"]
         _LOGGER.debug(f"async_load: {self._config}")
         self._entity_ids = self._config.get(CONF_ENTITIES)
         if len(self._entity_ids):
